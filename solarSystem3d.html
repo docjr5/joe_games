@@ -13,22 +13,10 @@
             <h1>3D Solar System Simulation</h1>
             <button onclick="startSimulation()">Start Simulation</button>
             <div id="versionInfo">
-                <p>Version 0.13</p>
-                <ul>
-                    <li>Fixed bug with missing sun texture obsuring orbits</li>
-                    <li>Reintroduced orbit controls</li>
-                </ul>
-                <p>Version 0.12</p>
-                <ul>
-                    <li>Implemented interactive planet selection and smooth camera transitions.</li>
-                    <li>Enhanced visualization with labels and outlines for planets.</li>
-                    <li>Improved solar system speed and scale accuracy.</li>
-                    <li>Added touchscreen support.</li>
-                </ul>
                 <p>Version 0.10</p>
                 <ul>
                     <li>Initial release with basic solar system simulation.</li>
-                    <li>Added sun with glow effect and eight planets.</li>
+                    <li>Added sun with eight planets.</li>
                     <li>Implemented orbit trails for planets.</li>
                 </ul>
             </div>
@@ -36,7 +24,6 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
     <script src="solarSystem3d.js"></script>
     <script>
         function startSimulation() {
