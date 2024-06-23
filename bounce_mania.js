@@ -133,11 +133,11 @@ function animate() {
         ball.y += ball.speedY + ball.spinY + ball.speedBoost;
 
         // Apply spin decay
-        ball.spinX *= 0.99; // Slower decay
-        ball.spinY *= 0.99; // Slower decay
+        ball.spinX *= 0.98; // Slower decay
+        ball.spinY *= 0.98; // Slower decay
 
         // Apply speed boost decay
-        ball.speedBoost *= 0.995; // Slower decay
+        ball.speedBoost *= 0.99; // Slower decay
 
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width) {

@@ -7,8 +7,8 @@ function init() {
     scene = new THREE.Scene();
 
     // Create a camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 500;
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+    camera.position.z = 1000;
 
     // Create a renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -42,7 +42,7 @@ function init() {
             followPlanet(selectedPlanet);
         }
     });
-    
+
     // Add ambient light
     const ambientLight = new THREE.AmbientLight(0x000000); // Near black light
     scene.add(ambientLight);
@@ -67,6 +67,9 @@ function init() {
     addPlanet(1427, 0xffff00, 58.2, 'Saturn');
     addPlanet(2871, 0x00bfff, 25.4, 'Uranus');
     addPlanet(4497, 0x0000ff, 24.6, 'Neptune');
+
+    // Add background stars
+    addStars();
 
     animate();
 }
@@ -151,16 +154,25 @@ function updateCamera() {
         camera.position.y = followedPlanet.position.y + 100;
         camera.position.z = followedPlanet.position.z + 100;
         controls.target.copy(followedPlanet.position);
-        controls.update();
     }
 }
 
-function animate() {
-    requestAnimationFrame(animate);
-    updatePlanets();
-    updateCamera(); // Add this line to update camera position if following a planet
-    controls.update();
-    renderer.render(scene, camera);
+function addStars() {
+    const starCount = 10000;
+    const starsGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+
+    for (let i = 0; i < starCount; i++) {
+        const x = (Math.random() - 0.5) * 5000;
+        const y = (Math.random() - 0.5) * 5000;
+        const z = (Math.random() - 0.5) * 5000;
+        starPositions.push(x, y, z);
+    }
+
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+    const starField = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(starField);
 }
 
 function startSimulation() {
