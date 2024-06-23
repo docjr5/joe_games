@@ -27,6 +27,7 @@ let balls = [
         color: 'cyan',
         spinX: 0,
         spinY: 0,
+        speedBoost: 0,
         glowPulse: 0
     }
 ];
@@ -88,6 +89,7 @@ function resetGame() {
             color: 'cyan',
             spinX: 0,
             spinY: 0,
+            speedBoost: 0,
             glowPulse: 0
         }
     ];
@@ -116,15 +118,20 @@ function startCountdown() {
 }
 
 function addNewBall(color) {
+    const angle = Math.PI / 6 + Math.random() * (Math.PI / 12); // Angle between 30-45 degrees
+    const speedX = Math.cos(angle) * maxSpeed * (Math.random() < 0.5 ? -1 : 1);
+    const speedY = Math.sin(angle) * maxSpeed;
+
     balls.push({
         x: canvas.width / 2,
         y: 50,
         radius: initialBallRadius,
-        speedX: (Math.random() * 2 - 1) * maxSpeed,
-        speedY: (Math.random() * 2 - 1) * maxSpeed,
+        speedX: speedX,
+        speedY: speedY,
         color: color,
         spinX: 0,
         spinY: 0,
+        speedBoost: 0,
         glowPulse: 0
     });
 }
@@ -140,12 +147,15 @@ function animate() {
         drawBall(ball);
 
         // Move the ball
-        ball.x += ball.speedX + ball.spinX;
-        ball.y += ball.speedY + ball.spinY;
+        ball.x += ball.speedX + ball.spinX + ball.speedBoost;
+        ball.y += ball.speedY + ball.spinY + ball.speedBoost;
 
         // Apply spin decay
         ball.spinX *= 0.95; // Slower decay
         ball.spinY *= 0.95; // Slower decay
+
+        // Apply speed boost decay
+        ball.speedBoost *= 0.95; // Slower decay
 
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
@@ -173,10 +183,13 @@ function animate() {
             ball.y - ball.radius < canvas.height - paddle.height - basketBottomMargin + ball.speedY &&
             ball.x > basketX && ball.x < basketX + paddle.width &&
             ball.y + ball.radius <= canvas.height - paddle.height - basketBottomMargin + ball.speedY) {
-            ball.speedY = -ball.speedY;
-            ball.spinX = (ball.x - (basketX + paddle.width / 2)) * 0.2 + basketVelocity * 0.15; // More pronounced spin effect
-            ball.spinY = 0;
-            ball.glowPulse = 30; // Trigger glow pulse on collision
+            ball.speedY = -Math.abs(ball.speedY); // Ensure the ball goes upwards
+
+            const impactPoint = ball.x - (basketX + paddle.width / 2);
+            ball.spinX = impactPoint * 0.2; // More pronounced spin effect
+            ball.speedBoost = Math.abs(basketVelocity) * 0.1; // Speed boost based on paddle velocity
+
+            ball.glowPulse = 20; // Trigger glow pulse on collision
             score++;
             if (score < 30) {
                 ball.speedX += (ball.speedX > 0 ? speedIncrement : -speedIncrement);
