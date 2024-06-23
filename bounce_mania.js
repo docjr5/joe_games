@@ -34,7 +34,7 @@ const speedIncrement = 0.05; // Slower rate of increase
 let gameActive = false;
 
 function resizeCanvas() {
-    canvas.width = Math.min(window.innerWidth, 1000);
+    canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
@@ -144,8 +144,8 @@ function animate() {
         ball.y += ball.speedY + ball.spinY;
 
         // Apply spin decay
-        ball.spinX *= 0.98;
-        ball.spinY *= 0.98;
+        ball.spinX *= 0.95; // Slower decay
+        ball.spinY *= 0.95; // Slower decay
 
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
@@ -174,9 +174,9 @@ function animate() {
             ball.x > basketX && ball.x < basketX + paddle.width &&
             ball.y + ball.radius <= canvas.height - paddle.height - basketBottomMargin + ball.speedY) {
             ball.speedY = -ball.speedY;
-            ball.spinX = (ball.x - (basketX + paddle.width / 2)) * 0.1 + basketVelocity * 0.05; // Impart spin based on where the ball hits the paddle and paddle velocity
+            ball.spinX = (ball.x - (basketX + paddle.width / 2)) * 0.2 + basketVelocity * 0.15; // More pronounced spin effect
             ball.spinY = 0;
-            ball.glowPulse = 20; // Trigger glow pulse on collision
+            ball.glowPulse = 30; // Trigger glow pulse on collision
             score++;
             if (score < 30) {
                 ball.speedX += (ball.speedX > 0 ? speedIncrement : -speedIncrement);
