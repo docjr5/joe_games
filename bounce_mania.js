@@ -9,16 +9,16 @@ let lastBasketX = basketX;
 let basketVelocity = 0;
 let currentPaddle = 0;
 const paddles = [
-    { width: 100, height: 16, color: 'magenta' },
+    { width: 105, height: 16, color: 'magenta' },
     { width: 95, height: 16, color: 'lime' },
-    { width: 90, height: 16, color: 'blue' }
+    { width: 85, height: 16, color: 'blue' }
 ];
 const basketBottomMargin = 50; // Margin from the bottom
 
-const initialBallRadius = 7.65; // Reduced size by about 10%
-const initialSpeed = 4; // Fixed initial speed
+const initialBallRadius = 7.5; // Reduced size by about 10%
+const initialSpeed = 3; // Fixed initial speed
 const maxIncrementSpeed = 6; // Maximum speed due to increments
-const speedIncrement = 0.1; // Speed increment per score point
+const speedIncrement = 0.15; // Speed increment per score point
 let balls = [];
 let gameActive = false;
 
@@ -45,9 +45,13 @@ function drawBasket() {
     ctx.beginPath();
     ctx.rect(basketX, canvas.height - paddle.height - basketBottomMargin, paddle.width, paddle.height);
     ctx.fillStyle = paddle.color;
+    ctx.shadowColor = paddle.color;
+    ctx.shadowBlur = 5; // Reduced shadow blur to decrease the trail effect
     ctx.fill();
     ctx.closePath();
+    ctx.shadowBlur = 0; // Reset shadowBlur after drawing
 }
+
 
 function updateScore() {
     document.getElementById('score').innerText = 'Score: ' + score;
@@ -140,11 +144,17 @@ function animate() {
         ball.speedBoost *= 0.99; // Slower decay
 
         // Ball bounces off the walls
-        if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+        if (ball.x + ball.radius > canvas.width) {
+            ball.x = canvas.width - ball.radius;
+            ball.speedX = -ball.speedX;
+            ball.glowPulse = 10; // Trigger glow pulse on collision
+        } else if (ball.x - ball.radius < 0) {
+            ball.x = ball.radius;
             ball.speedX = -ball.speedX;
             ball.glowPulse = 10; // Trigger glow pulse on collision
         }
         if (ball.y - ball.radius < 0) {
+            ball.y = ball.radius;
             ball.speedY = -ball.speedY;
             ball.glowPulse = 10; // Trigger glow pulse on collision
         }
