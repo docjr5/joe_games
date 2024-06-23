@@ -136,8 +136,13 @@ function updateTrail(planet) {
 
 function onPlanetClick(event) {
     const mouse = new THREE.Vector2();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    if (event.changedTouches) {
+        mouse.x = (event.changedTouches[0].clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.changedTouches[0].clientY / window.innerHeight) * 2 + 1;
+    } else {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    }
 
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
@@ -157,6 +162,7 @@ window.addEventListener('resize', () => {
 });
 
 window.addEventListener('click', onPlanetClick);
+window.addEventListener('touchstart', onPlanetClick);
 
 function startSimulation() {
     document.getElementById('launchModal').style.display = 'none';
