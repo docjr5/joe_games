@@ -68,6 +68,17 @@ function init() {
     addPlanet(2871, 0x00bfff, 25.4, 'Uranus');    // Uranus
     addPlanet(4497, 0x0000ff, 24.6, 'Neptune');   // Neptune
 
+    // Create full trails for the orbits
+    planets.forEach(planet => {
+        for (let i = 0; i < 360; i++) {
+            const angle = (i * Math.PI) / 180;
+            const x = planet.userData.distance * Math.cos(angle);
+            const z = planet.userData.distance * Math.sin(angle);
+            planet.userData.path.push(new THREE.Vector3(x, 0, z));
+        }
+        updateTrail(planet);
+    });
+
     animate();
 }
 
@@ -88,12 +99,14 @@ function addPlanet(distance, color, radius, name) {
     const label = new THREE.CSS2DObject(labelDiv);
     label.position.set(0, radius + 4, 0);
     planet.add(label);
+    label.visible = false;
 
     // Add outline
     const outlineMaterial = new THREE.MeshBasicMaterial({ color: material.color, side: THREE.BackSide });
     const outlineMesh = new THREE.Mesh(geometry, outlineMaterial);
     outlineMesh.scale.set(1.1, 1.1, 1.1);
     planet.add(outlineMesh);
+    outlineMesh.visible = false;
 }
 
 function animate() {
@@ -119,14 +132,6 @@ function updatePlanets() {
 }
 
 function updateTrail(planet) {
-    const maxPathLength = 1000;
-    const position = planet.position.clone();
-    planet.userData.path.push(position);
-
-    if (planet.userData.path.length > maxPathLength) {
-        planet.userData.path.shift();
-    }
-
     const pathGeometry = new THREE.BufferGeometry().setFromPoints(planet.userData.path);
     const pathMaterial = new THREE.LineBasicMaterial({ color: planet.material.color, opacity: 0.6, transparent: true });
     const pathLine = new THREE.Line(pathGeometry, pathMaterial);
@@ -153,6 +158,15 @@ function onPlanetClick(event) {
     if (intersects.length > 0) {
         selectedPlanet = intersects[0].object;
         controls.target.copy(selectedPlanet.position);
+
+        planets.forEach(planet => {
+            const isSelected = planet === selectedPlanet;
+            planet.children.forEach(child => {
+                if (child instanceof THREE.CSS2DObject || child instanceof THREE.Mesh && child.material.side === THREE.BackSide) {
+                    child.visible = isSelected;
+                }
+            });
+        });
     }
 }
 
