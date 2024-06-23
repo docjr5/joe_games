@@ -10,32 +10,32 @@ function init() {
     camera.position.z = 300;
 
     // Create a renderer
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+    // Add orbit controls
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // Add ambient light
+    const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+    scene.add(ambientLight);
+
+    // Add point light
+    const pointLight = new THREE.PointLight(0xffffff, 1, 1000);
+    pointLight.position.set(0, 0, 0);
+    scene.add(pointLight);
 
     // Create the Sun
     const sunGeometry = new THREE.SphereGeometry(30, 32, 32);
     const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFFD700 });
     sun = new THREE.Mesh(sunGeometry, sunMaterial);
-    sun.position.set(0, 0, 0);
     scene.add(sun);
 
     // Create the planets
     addPlanet(50, 0x00FF00, 5);
     addPlanet(100, 0x00BFFF, 7);
     addPlanet(150, 0xFF4500, 10);
-
-    // Add lights
-    const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
-    scene.add(ambientLight);
-
-    const pointLight = new THREE.PointLight(0xffffff, 1, 500);
-    pointLight.position.set(0, 0, 0);
-    scene.add(pointLight);
-
-    // Add orbit controls
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
 
     animate();
 }
