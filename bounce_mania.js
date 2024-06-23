@@ -197,45 +197,47 @@ function animate() {
                 const dy = otherBall.y - ball.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance < ball.radius + otherBall.radius) {
-                    // Handle ball collision
+                    // Calculate angle of collision
                     const angle = Math.atan2(dy, dx);
                     const sin = Math.sin(angle);
                     const cos = Math.cos(angle);
 
                     // Rotate ball's position
-                    const x1 = 0;
-                    const y1 = 0;
-
-                    // Rotate otherBall's position
-                    const x2 = dx * cos + dy * sin;
-                    const y2 = dy * cos - dx * sin;
+                    const pos1 = { x: 0, y: 0 }; // ball is at (0, 0) after rotation
+                    const pos2 = rotate(dx, dy, sin, cos, true);
 
                     // Rotate ball's velocity
-                    const vx1 = ball.speedX * cos + ball.speedY * sin;
-                    const vy1 = ball.speedY * cos - ball.speedX * sin;
+                    const vel1 = rotate(ball.speedX, ball.speedY, sin, cos, true);
+                    const vel2 = rotate(otherBall.speedX, otherBall.speedY, sin, cos, true);
 
-                    // Rotate otherBall's velocity
-                    const vx2 = otherBall.speedX * cos + otherBall.speedY * sin;
-                    const vy2 = otherBall.speedY * cos - otherBall.speedX * sin;
+                    // Collision reaction: swap the velocities
+                    const vxTotal = vel1.x - vel2.x;
+                    vel1.x = ((ball.radius - otherBall.radius) * vel1.x + 2 * otherBall.radius * vel2.x) / (ball.radius + otherBall.radius);
+                    vel2.x = vxTotal + vel1.x;
 
-                    // Collision reaction
-                    const vxTotal = vx1 - vx2;
-                    vx1 = ((ball.radius - otherBall.radius) * vx1 + 2 * otherBall.radius * vx2) / (ball.radius + otherBall.radius);
-                    vx2 = vxTotal + vx1;
+                    // Update position to avoid sticking together
+                    pos1.x += vel1.x;
+                    pos2.x += vel2.x;
 
-                    // Update ball's position
-                    ball.x += vx1 * cos - vy1 * sin;
-                    ball.y += vy1 * cos + vx1 * sin;
+                    // Rotate positions back
+                    const pos1F = rotate(pos1.x, pos1.y, sin, cos, false);
+                    const pos2F = rotate(pos2.x, pos2.y, sin, cos, false);
 
-                    // Update otherBall's position
-                    otherBall.x += vx2 * cos - vy2 * sin;
-                    otherBall.y += vy2 * cos + vx2 * sin;
+                    // Adjust positions to the actual screen position
+                    otherBall.x = ball.x + pos2F.x;
+                    otherBall.y = ball.y + pos2F.y;
+                    ball.x = ball.x + pos1F.x;
+                    ball.y = ball.y + pos1F.y;
+
+                    // Rotate velocities back
+                    const vel1F = rotate(vel1.x, vel1.y, sin, cos, false);
+                    const vel2F = rotate(vel2.x, vel2.y, sin, cos, false);
 
                     // Update velocities
-                    ball.speedX = vx1 * cos - vy1 * sin;
-                    ball.speedY = vy1 * cos + vx1 * sin;
-                    otherBall.speedX = vx2 * cos - vy2 * sin;
-                    otherBall.speedY = vy2 * cos + vx2 * sin;
+                    ball.speedX = vel1F.x;
+                    ball.speedY = vel1F.y;
+                    otherBall.speedX = vel2F.x;
+                    otherBall.speedY = vel2F.y;
 
                     // Trigger glow pulse on collision
                     ball.glowPulse = 20;
@@ -264,6 +266,13 @@ function animate() {
     }
 
     requestAnimationFrame(animate);
+}
+
+function rotate(x, y, sin, cos, reverse) {
+    return {
+        x: (reverse ? (x * cos + y * sin) : (x * cos - y * sin)),
+        y: (reverse ? (y * cos - x * sin) : (y * cos + x * sin))
+    };
 }
 
 function startGame() {

@@ -1,27 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solar System Simulation</title>
-    <style>
-        canvas {
-            background-color: #000;
-            overflow-block: hidden;
-            width: 100%;
-            height: 100%;
-            margin: 0px;
-        }
-
-        body {
-            margin: 0px;
-            overflow: hidden;
-        }
-
-    </style>
+    <link rel="stylesheet" href="sharedStyles.css">
 </head>
-<body>
-    <canvas id="gameCanvas"></canvas>
-    <div class="button-container">
+<body class="sss">
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="launchModal">
+            <h1>Solar System Simulation</h1>
+            <button onclick="startSimulation()">Start Simulation</button>
+            <div id="versionInfo">
+                <p>Version 1.0</p>
+                <ul>
+                    <li>Initial release with basic celestial bodies and orbital mechanics.</li>
+                </ul>
+                <p>Version 1.1</p>
+                <ul>
+                    <li>Added collision detection and handling.</li>
+                    <li>Improved gravitational calculations.</li>
+                </ul>
+                <p>Version 1.2</p>
+                <ul>
+                    <li>Introduced user controls for adjusting simulation speed.</li>
+                    <li>Enhanced visual effects for celestial bodies.</li>
+                </ul>
+            </div>
+        </div>
     </div>
     <script src="solarSystem.js"></script>
+    <script>
+        function startSimulation() {
+            document.getElementById('launchModal').style.display = 'none';
+            init();
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('launchModal').style.display = 'block';
+        });
+    </script>
 </body>
 </html>

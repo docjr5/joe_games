@@ -1,0 +1,162 @@
+/* Common Styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#launchModal, #gameOverModal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    display: none;
+}
+
+#launchModal button, #gameOverModal button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #333;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#versionInfo {
+    margin-top: 10px;
+    width: 75%;
+    max-width: 1000px;
+    max-height: 450px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#versionInfo p {
+    margin: 5px 0;
+    font-weight: bold;
+}
+
+#versionInfo ul {
+    padding-left: 20px;
+}
+
+/* Styles for Joe's Bounce Mania */
+.jbm #score, .jbm #highScore {
+    position: absolute;
+    color: magenta;
+    font-size: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 5px magenta;
+}
+
+.jbm #score {
+    top: 10px;
+    left: 10px;
+}
+
+.jbm #highScore {
+    top: 10px;
+    right: 10px;
+}
+
+.jbm #launchModal, .jbm #gameOverModal {
+    color: magenta;
+    text-shadow: 0 0 5px magenta;
+}
+
+.jbm #launchModal button, .jbm #gameOverModal button {
+    color: magenta;
+    border: 2px solid magenta;
+    text-shadow: 0 0 5px magenta;
+}
+
+.jbm #versionInfo {
+    color: magenta;
+    text-shadow: 0 0 5px magenta;
+}
+
+.jbm #countdown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 40px;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 5px magenta;
+}
+
+/* Styles for Solar System Simulation */
+.sss #score, .sss #highScore {
+    position: absolute;
+    color: cyan;
+    font-size: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 5px cyan;
+}
+
+.sss #score {
+    top: 10px;
+    left: 10px;
+}
+
+.sss #highScore {
+    top: 10px;
+    right: 10px;
+}
+
+.sss #launchModal, .sss #gameOverModal {
+    color: cyan;
+    text-shadow: 0 0 5px cyan;
+}
+
+.sss #launchModal button, .sss #gameOverModal button {
+    color: cyan;
+    border: 2px solid cyan;
+    text-shadow: 0 0 5px cyan;
+}
+
+.sss #versionInfo {
+    color: cyan;
+    text-shadow: 0 0 5px cyan;
+}
+
+.sss #countdown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 40px;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 5px cyan;
+}
