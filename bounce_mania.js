@@ -5,6 +5,8 @@ resizeCanvas();
 let score = 0;
 let highScore = localStorage.getItem('highScore') || 0;
 let basketX = canvas.width / 2;
+let lastBasketX = basketX;
+let basketVelocity = 0;
 let currentPaddle = 0;
 const paddles = [
     { width: 100, height: 16, color: 'magenta' },
@@ -172,7 +174,7 @@ function animate() {
             ball.x > basketX && ball.x < basketX + paddle.width &&
             ball.y + ball.radius <= canvas.height - paddle.height - basketBottomMargin + ball.speedY) {
             ball.speedY = -ball.speedY;
-            ball.spinX = (ball.x - (basketX + paddle.width / 2)) * 0.1; // Impart spin based on where the ball hits the paddle
+            ball.spinX = (ball.x - (basketX + paddle.width / 2)) * 0.1 + basketVelocity * 0.05; // Impart spin based on where the ball hits the paddle and paddle velocity
             ball.spinY = 0;
             ball.glowPulse = 20; // Trigger glow pulse on collision
             score++;
@@ -268,9 +270,11 @@ canvas.addEventListener('touchmove', movePaddle);
 
 function movePaddle(e) {
     const clientX = e.clientX || e.touches[0].clientX;
+    lastBasketX = basketX;
     basketX = clientX - paddles[currentPaddle].width / 2;
     if (basketX < 0) basketX = 0;
     if (basketX + paddles[currentPaddle].width > canvas.width) basketX = canvas.width - paddles[currentPaddle].width;
+    basketVelocity = basketX - lastBasketX;
 }
 
 init();
