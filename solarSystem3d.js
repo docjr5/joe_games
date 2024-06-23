@@ -13,6 +13,7 @@ function init() {
     // Create a renderer with antialiasing
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000); // Set background color to black
     document.body.appendChild(renderer.domElement);
 
     // Add orbit controls
