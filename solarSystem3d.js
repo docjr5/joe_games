@@ -20,6 +20,7 @@ function init() {
     controls.enableDamping = true; // Enable damping for smooth movement
     controls.dampingFactor = 0.05; // Set damping factor
     controls.rotateSpeed = 0.1; // Set rotation speed
+    controls.enablePan = true;
     controls.touches = {
         ONE: THREE.TOUCH.ROTATE, // Single touch rotates the camera
         TWO: THREE.TOUCH.DOLLY_PAN // Two touches dolly and pan the camera
@@ -40,18 +41,16 @@ function init() {
     });
 
     // Add event listener to break lock on pan
-    controls.addEventListener('change', () => {
-        if (controls.enablePan) {
-            stopFollowingObject();
-        }
+    controls.addEventListener('start', () => {
+        stopFollowingObject();
     });
 
     // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0x000000); // Near black light
+    const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
     scene.add(ambientLight);
 
     // Add point light for the sun
-    const pointLight = new THREE.PointLight(0xffffff, 5, 5000); // Increased intensity and distance
+    const pointLight = new THREE.PointLight(0xffffff, 2, 5000); // Increased intensity and distance
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
 
@@ -76,6 +75,19 @@ function init() {
     addStars();
 
     animate();
+}
+
+function addPlanet(distance, color, radius, name, ellipseFactor, orbitInclination) {
+    const geometry = new THREE.SphereGeometry(radius, 32, 32);
+    const material = new THREE.MeshPhongMaterial({ color: color });
+    const planet = new THREE.Mesh(geometry, material);
+    planet.userData = { distance, angle: 0, name, path: [], ellipseFactor, orbitInclination };
+    planet.position.set(distance, 0, 0);
+    scene.add(planet);
+    planets.push(planet);
+
+    // Initialize the trail
+    initializeTrail(planet);
 }
 
 function initializeTrail(planet) {
@@ -133,20 +145,22 @@ let followedObject = null;
 function followObject(object) {
     followObjectEnabled = true;
     followedObject = object;
-    controls.enablePan = false;
+    controls.enablePan = true; // Allow panning, orbiting, and zooming
 }
 
 function stopFollowingObject() {
     followObjectEnabled = false;
     followedObject = null;
-    controls.enablePan = true;
 }
 
 function updateCamera() {
     if (followObjectEnabled && followedObject) {
-        camera.position.x = followedObject.position.x + 100;
-        camera.position.y = followedObject.position.y + 100;
-        camera.position.z = followedObject.position.z + 100;
+        const offset = 100;
+        camera.position.set(
+            followedObject.position.x + offset,
+            followedObject.position.y + offset,
+            followedObject.position.z + offset
+        );
         controls.target.copy(followedObject.position);
     }
 }
