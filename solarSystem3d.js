@@ -56,18 +56,6 @@ function init() {
     const sunGeometry = new THREE.SphereGeometry(30, 32, 32);
     const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     sun = new THREE.Mesh(sunGeometry, sunMaterial);
-
-    // Create a glow effect around the sun
-    const sunGlowMaterial = new THREE.SpriteMaterial({
-        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/sprites/glow.png'),
-        color: 0xFFD700,
-        transparent: true,
-        blending: THREE.AdditiveBlending
-    });
-    const sunGlow = new THREE.Sprite(sunGlowMaterial);
-    sunGlow.scale.set(100, 100, 1.0);
-    sun.add(sunGlow);
-
     scene.add(sun);
 
     // Create the planets with correct sizes and distances
@@ -112,6 +100,7 @@ function initializeTrail(planet) {
 function animate() {
     requestAnimationFrame(animate);
     updatePlanets();
+    updateCamera(); // Add this line to update camera position if following a planet
     controls.update();
     renderer.render(scene, camera);
 }
