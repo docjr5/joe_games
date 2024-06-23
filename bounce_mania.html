@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joe's Bounce Mania v0.17</title>
+    <title>Joe's Bounce Mania v0.18</title>
     <style>
         html, body {
             margin: 0;
@@ -50,16 +50,25 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: rgba(0, 0, 0, 0.8);
-            color: white;
+            color: #0f0;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #0f0;
             display: none;
         }
         #launchModal button, #gameOverModal button {
             margin-top: 10px;
             padding: 10px 20px;
             font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #0f0;
+            background-color: #333;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            text-shadow: 0 0 5px #0f0;
         }
         #versionInfo {
             margin-top: 10px;
@@ -67,6 +76,16 @@
             overflow-y: auto;
             text-align: left;
             font-size: 14px;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #0f0;
+        }
+        #versionInfo p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        #versionInfo ul {
+            padding-left: 20px;
         }
         #countdown {
             position: absolute;
@@ -90,14 +109,20 @@
             <h1>Joe's Bounce Mania</h1>
             <button onclick="startGame()">Start Game</button>
             <div id="versionInfo">
-                <p><strong>Version 0.17</strong></p>
+                <p>Version 0.18</p>
                 <ul>
-                    <li>Complete Phsysics overhaul. Paddle velocity can now impart spin and speed onto the balls</li>
+                    <li>Visual tweaks to paddle for clarity</li>
+                    <li>Changes to ball spawning speeds to ensure all balls have the same initial speeds</li>
+
+                </ul>
+                <p>Version 0.17</p>
+                <ul>
+                    <li>Complete Physics overhaul. Paddle velocity can now impart spin and speed onto the balls</li>
                     <li>Added start modal with version information.</li>
                     <li>Enhanced collision detection and ball physics.</li>
                     <li>Fixed bug causing ball to get stuck in walls</li>
                 </ul>
-                <p><strong>Version 0.11</strong></p>
+                <p>Version 0.11</p>
                 <ul>
                     <li>Visuals overhaul</li>
                     <li>Various bug fixes</li>
