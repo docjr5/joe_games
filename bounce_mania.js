@@ -16,23 +16,11 @@ const paddles = [
 const basketBottomMargin = 50; // Margin from the bottom
 
 const initialBallRadius = 7.65; // Reduced size by about 10%
-const maxSpeed = 5;
-let balls = [
-    {
-        x: canvas.width / 2,
-        y: 50,
-        radius: initialBallRadius,
-        speedX: (Math.random() * 2 - 1) * maxSpeed,
-        speedY: (Math.random() * 2 - 1) * maxSpeed,
-        color: 'cyan',
-        spinX: 0,
-        spinY: 0,
-        speedBoost: 0,
-        glowPulse: 0
-    }
-];
-const speedIncrement = 0.05; // Slower rate of increase
-let gameActive = false;
+const initialSpeed = 4; // Fixed initial speed
+const maxIncrementSpeed = 6; // Maximum speed due to increments
+const speedIncrement = 0.1; // Speed increment per score point
+let balls = [];
+const gameActive = false;
 
 function resizeCanvas() {
     const gameContainer = document.getElementById('gameContainer');
@@ -45,7 +33,7 @@ function drawBall(ball) {
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fillStyle = ball.color;
     ctx.shadowColor = ball.color;
-    ctx.shadowBlur = 10 + ball.glowPulse; // Reduced glow size with pulse effect
+    ctx.shadowBlur = 8 + ball.glowPulse; // Reduced glow size with pulse effect
     ctx.fill();
     ctx.closePath();
     ctx.shadowBlur = 0; // Reset shadowBlur after drawing
@@ -81,23 +69,30 @@ function resetGame() {
     score = 0;
     currentPaddle = 0; // Reset paddle to the first one
     balls = [
-        {
-            x: canvas.width / 2,
-            y: 50,
-            radius: initialBallRadius,
-            speedX: (Math.random() * 2 - 1) * maxSpeed,
-            speedY: (Math.random() * 2 - 1) * maxSpeed,
-            color: 'cyan',
-            spinX: 0,
-            spinY: 0,
-            speedBoost: 0,
-            glowPulse: 0
-        }
+        createBall('cyan')
     ];
     updateScore();
-    gameActive = false;
     hideGameOverModal();
     startCountdown();
+}
+
+function createBall(color) {
+    const angle = (30 + Math.random() * 15) * (Math.PI / 180); // Angle between 30-45 degrees
+    const speedX = Math.cos(angle) * initialSpeed * (Math.random() < 0.5 ? -1 : 1);
+    const speedY = Math.sin(angle) * initialSpeed;
+    
+    return {
+        x: canvas.width / 2,
+        y: 50,
+        radius: initialBallRadius,
+        speedX: speedX,
+        speedY: speedY,
+        color: color,
+        spinX: 0,
+        spinY: 0,
+        speedBoost: 0,
+        glowPulse: 0
+    };
 }
 
 function startCountdown() {
@@ -119,22 +114,7 @@ function startCountdown() {
 }
 
 function addNewBall(color) {
-    const angle = Math.PI / 6 + Math.random() * (Math.PI / 12); // Angle between 30-45 degrees
-    const speedX = Math.cos(angle) * maxSpeed * (Math.random() < 0.5 ? -1 : 1);
-    const speedY = Math.sin(angle) * maxSpeed;
-
-    balls.push({
-        x: canvas.width / 2,
-        y: 50,
-        radius: initialBallRadius,
-        speedX: speedX,
-        speedY: speedY,
-        color: color,
-        spinX: 0,
-        spinY: 0,
-        speedBoost: 0,
-        glowPulse: 0
-    });
+    balls.push(createBall(color));
 }
 
 function animate() {
@@ -152,20 +132,20 @@ function animate() {
         ball.y += ball.speedY + ball.spinY + ball.speedBoost;
 
         // Apply spin decay
-        ball.spinX *= 0.95; // Slower decay
-        ball.spinY *= 0.95; // Slower decay
+        ball.spinX *= 0.97; // Slower decay
+        ball.spinY *= 0.97; // Slower decay
 
         // Apply speed boost decay
-        ball.speedBoost *= 0.95; // Slower decay
+        ball.speedBoost *= 0.99; // Slower decay
 
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
             ball.speedX = -ball.speedX;
-            ball.glowPulse = 20; // Trigger glow pulse on collision
+            ball.glowPulse = 10; // Trigger glow pulse on collision
         }
         if (ball.y - ball.radius < 0) {
             ball.speedY = -ball.speedY;
-            ball.glowPulse = 20; // Trigger glow pulse on collision
+            ball.glowPulse = 10; // Trigger glow pulse on collision
         }
 
         // Ball hits the bottom
@@ -190,11 +170,17 @@ function animate() {
             ball.spinX = impactPoint * 0.2; // More pronounced spin effect
             ball.speedBoost = Math.abs(basketVelocity) * 0.1; // Speed boost based on paddle velocity
 
-            ball.glowPulse = 20; // Trigger glow pulse on collision
+            ball.glowPulse = 30; // Trigger glow pulse on collision
             score++;
             if (score < 30) {
-                ball.speedX += (ball.speedX > 0 ? speedIncrement : -speedIncrement);
-                ball.speedY += (ball.speedY > 0 ? speedIncrement : -speedIncrement);
+                let newSpeedX = ball.speedX + (ball.speedX > 0 ? speedIncrement : -speedIncrement);
+                let newSpeedY = ball.speedY + (ball.speedY > 0 ? speedIncrement : -speedIncrement);
+                let currentSpeed = Math.sqrt(newSpeedX * newSpeedX + newSpeedY * newSpeedY);
+
+                if (currentSpeed <= maxIncrementSpeed) {
+                    ball.speedX = newSpeedX;
+                    ball.speedY = newSpeedY;
+                }
             }
             updateScore();
         }
