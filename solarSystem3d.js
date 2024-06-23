@@ -1,4 +1,4 @@
-let scene, camera, renderer, controls, labelRenderer;
+let scene, camera, renderer, controls, labelRenderer, dragControls;
 let sun, planets = [];
 let selectedPlanet = null;
 const G = 0.05; // Gravitational constant
@@ -63,6 +63,15 @@ function init() {
             planet.userData.path.push(new THREE.Vector3(x, 0, z));
         }
         updateTrail(planet);
+    });
+
+    // Create drag controls
+    dragControls = new THREE.DragControls(planets, camera, renderer.domElement);
+    dragControls.addEventListener('dragstart', function (event) {
+        controls.enabled = false;
+    });
+    dragControls.addEventListener('dragend', function (event) {
+        controls.enabled = true;
     });
 
     animate();
