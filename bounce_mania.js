@@ -35,8 +35,9 @@ const speedIncrement = 0.05; // Slower rate of increase
 let gameActive = false;
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const gameContainer = document.getElementById('gameContainer');
+    canvas.width = gameContainer.clientWidth;
+    canvas.height = gameContainer.clientHeight;
 }
 
 function drawBall(ball) {
@@ -277,6 +278,8 @@ function init() {
     updateScore();
     resetGame();
 }
+
+window.addEventListener('resize', resizeCanvas);
 
 canvas.addEventListener('mousemove', movePaddle);
 canvas.addEventListener('touchmove', movePaddle);
