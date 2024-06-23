@@ -3,40 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joe's Games</title>
+    <title>Joe's Bounce Mania v0.17</title>
     <style>
-        body {
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #000;
-            font-family: 'Courier New', Courier, monospace;
         }
-        .container {
-            text-align: center;
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
         }
-        .button {
-            background-color: magenta;
-            color: #000;
-            padding: 15px 30px;
-            margin: 10px;
-            border: none;
-            cursor: pointer;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #score, #highScore {
+            position: absolute;
+            color: #0f0;
             font-size: 20px;
-            transition: background-color 0.3s ease;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #0f0;
         }
-        .button:hover {
-            background-color: #0c0;
+        #score {
+            top: 10px;
+            left: 10px;
+        }
+        #highScore {
+            top: 10px;
+            right: 10px;
+        }
+        #launchModal, #gameOverModal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #0f0;
+            display: none;
+        }
+        #launchModal button, #gameOverModal button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #0f0;
+            background-color: #333;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            text-shadow: 0 0 5px #0f0;
+        }
+        #versionInfo {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 14px;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #0f0;
+        }
+        #versionInfo p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        #versionInfo ul {
+            padding-left: 20px;
+        }
+        #countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 40px;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 5px #0f0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 style="color: #0f0; text-shadow: 0 0 5px #0f0;">Joe's Games</h1>
-        <p style="color: #0f0; text-shadow: 0 0 5px #0f0;">Game Selection</p>
-        <button class="button" onclick="location.href='bounce_mania.html'">Play Bounce Mania</button>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+        <div id="countdown"></div>
+        <div id="launchModal">
+            <h1>Joe's Bounce Mania</h1>
+            <button onclick="startGame()">Start Game</button>
+            <div id="versionInfo">
+                <p>Version 0.18</p>
+                <ul>
+                    <li>Visual tweaks to paddle for clarity</li>
+                    <li>Changes to ball spawning speeds to ensure all balls have the same initial speeds</li>
+
+                </ul>
+                <p>Version 0.17</p>
+                <ul>
+                    <li>Complete Physics overhaul. Paddle velocity can now impart spin and speed onto the balls</li>
+                    <li>Added start modal with version information.</li>
+                    <li>Enhanced collision detection and ball physics.</li>
+                    <li>Fixed bug causing ball to get stuck in walls</li>
+                </ul>
+                <p>Version 0.11</p>
+                <ul>
+                    <li>Visuals overhaul</li>
+                    <li>Various bug fixes</li>
+                </ul>
+            </div>
+        </div>
+        <div id="gameOverModal">
+            <p>Game Over! Your score is: <span id="finalScore"></span></p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
     </div>
+    <script src="bounce_mania.js"></script>
 </body>
 </html>

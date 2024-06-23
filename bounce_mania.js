@@ -9,13 +9,13 @@ let lastBasketX = basketX;
 let basketVelocity = 0;
 let currentPaddle = 0;
 const paddles = [
-    { width: 100, height: 16, color: 'magenta' },
-    { width: 95, height: 16, color: 'lime' },
-    { width: 90, height: 16, color: 'blue' }
+    { width: 105, height: 8, color: 'magenta' },
+    { width: 95, height: 8, color: 'lime' },
+    { width: 85, height: 8, color: 'blue' }
 ];
 const basketBottomMargin = 50; // Margin from the bottom
 
-const initialBallRadius = 7.65; // Reduced size by about 10%
+const initialBallRadius = 7.5; // Reduced size by about 10%
 const initialSpeed = 4; // Fixed initial speed
 const maxIncrementSpeed = 6; // Maximum speed due to increments
 const speedIncrement = 0.1; // Speed increment per score point
@@ -45,11 +45,8 @@ function drawBasket() {
     ctx.beginPath();
     ctx.rect(basketX, canvas.height - paddle.height - basketBottomMargin, paddle.width, paddle.height);
     ctx.fillStyle = paddle.color;
-    ctx.shadowColor = paddle.color;
-    ctx.shadowBlur = 5; // Reduced shadow blur to decrease the trail effect
     ctx.fill();
     ctx.closePath();
-    ctx.shadowBlur = 0; // Reset shadowBlur after drawing
 }
 
 function updateScore() {
@@ -72,7 +69,7 @@ function resetGame() {
     score = 0;
     currentPaddle = 0; // Reset paddle to the first one
     balls = [
-        createBall('cyan')
+        createBall('cyan', initialSpeed)
     ];
     updateScore();
     gameActive = false;
@@ -80,10 +77,10 @@ function resetGame() {
     startCountdown();
 }
 
-function createBall(color) {
+function createBall(color, speed) {
     const angle = (30 + Math.random() * 15) * (Math.PI / 180); // Angle between 30-45 degrees
-    const speedX = Math.cos(angle) * initialSpeed * (Math.random() < 0.5 ? -1 : 1);
-    const speedY = Math.sin(angle) * initialSpeed;
+    const speedX = Math.cos(angle) * speed * (Math.random() < 0.5 ? -1 : 1);
+    const speedY = Math.sin(angle) * speed;
     
     return {
         x: canvas.width / 2,
@@ -117,16 +114,16 @@ function startCountdown() {
     }, 1000);
 }
 
-function addNewBall(color) {
-    balls.push(createBall(color));
+function addNewBall(color, speed) {
+    balls.push(createBall(color, speed));
 }
 
 function animate() {
     if (!gameActive) return;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Create trail effect for the ball
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Create trail effect for the ball
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawBasket(); // Draw the paddle with trail effect
+    drawBasket(); // Draw the paddle with reduced trail effect
 
     balls.forEach((ball, index) => {
         drawBall(ball);
@@ -172,8 +169,7 @@ function animate() {
         const paddle = paddles[currentPaddle];
         if (ball.y + ball.radius > canvas.height - paddle.height - basketBottomMargin &&
             ball.y - ball.radius < canvas.height - paddle.height - basketBottomMargin + ball.speedY &&
-            ball.x > basketX && ball.x < basketX + paddle.width &&
-            ball.y + ball.radius <= canvas.height - paddle.height - basketBottomMargin + ball.speedY) {
+            ball.x > basketX && ball.x < basketX + paddle.width) {
             ball.speedY = -Math.abs(ball.speedY); // Ensure the ball goes upwards
 
             const impactPoint = ball.x - (basketX + paddle.width / 2);
@@ -182,15 +178,13 @@ function animate() {
 
             ball.glowPulse = 30; // Trigger glow pulse on collision
             score++;
-            if (score < 30) {
-                let newSpeedX = ball.speedX + (ball.speedX > 0 ? speedIncrement : -speedIncrement);
-                let newSpeedY = ball.speedY + (ball.speedY > 0 ? speedIncrement : -speedIncrement);
-                let currentSpeed = Math.sqrt(newSpeedX * newSpeedX + newSpeedY * newSpeedY);
+            let newSpeedX = ball.speedX + (ball.speedX > 0 ? speedIncrement : -speedIncrement);
+            let newSpeedY = ball.speedY + (ball.speedY > 0 ? speedIncrement : -speedIncrement);
+            let currentSpeed = Math.sqrt(newSpeedX * newSpeedX + newSpeedY * newSpeedY);
 
-                if (currentSpeed <= maxIncrementSpeed) {
-                    ball.speedX = newSpeedX;
-                    ball.speedY = newSpeedY;
-                }
+            if (currentSpeed <= maxIncrementSpeed) {
+                ball.speedX = newSpeedX;
+                ball.speedY = newSpeedY;
             }
             updateScore();
         }
@@ -253,10 +247,12 @@ function animate() {
 
     // Add new balls at specific scores
     if (score === 10 && balls.length < 2) {
-        addNewBall('lime');
+        let currentSpeed = initialSpeed + (speedIncrement * 10);
+        addNewBall('lime', currentSpeed);
     }
     if (score === 20 && balls.length < 3) {
-        addNewBall('yellow');
+        let currentSpeed = initialSpeed + (speedIncrement * 20);
+        addNewBall('yellow', currentSpeed);
     }
 
     // Switch paddle at specific scores
