@@ -21,6 +21,8 @@ function init() {
 
     // Add orbit controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enablePan = true;
+    controls.enableZoom = true;
 
     // Add label renderer
     labelRenderer = new THREE.CSS2DRenderer();

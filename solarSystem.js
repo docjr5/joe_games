@@ -39,6 +39,40 @@ let followingObject = star; // Default follow object is the star
 let targetOrbitAngleX = 0;
 let targetOrbitAngleY = 0;
 
+canvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    const mouseX = touch.clientX - canvas.width / 2;
+    const mouseY = touch.clientY - canvas.height / 2;
+
+    planets.concat([star]).forEach(obj => {
+        const { x, y } = applyOrbitTransformation(obj.x, obj.y);
+        const distance = Math.sqrt((x - mouseX) ** 2 + (y - mouseY) ** 2);
+        if (distance < obj.radius * scale) {
+            orbitCenter = { x: obj.x, y: obj.y, z: 0 };
+            followingObject = obj;
+        }
+    });
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (isDragging) {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - lastX;
+        const deltaY = touch.clientY - lastY;
+        orbitVelocityY = deltaX * 0.002; // Adjust for horizontal rotation
+        orbitVelocityX = deltaY * 0.002; // Adjust for vertical rotation (constrained)
+        targetOrbitAngleY += orbitVelocityY;
+        targetOrbitAngleX += orbitVelocityX;
+        lastX = touch.clientX;
+        lastY = touch.clientY;
+    }
+});
+
+canvas.addEventListener('touchend', () => {
+    isDragging = false;
+});
+
 canvas.addEventListener('mousemove', (e) => {
     if (isDragging) {
         const deltaX = e.clientX - lastX;
