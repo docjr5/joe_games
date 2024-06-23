@@ -1,4 +1,4 @@
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, labelRenderer;
 let sun, planets = [];
 let selectedPlanet = null;
 const G = 0.05; // Gravitational constant
@@ -22,6 +22,13 @@ function init() {
     // Add orbit controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+    // Add label renderer
+    labelRenderer = new THREE.CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    document.body.appendChild(labelRenderer.domElement);
+
     // Add ambient light (very low intensity)
     const ambientLight = new THREE.AmbientLight(0x404040, 0.1); // Very soft white light
     scene.add(ambientLight);
@@ -32,14 +39,13 @@ function init() {
     scene.add(pointLight);
 
     // Create the Sun
-    const sunTexture = textureLoader.load('https://www.solarsystemscope.com/textures/download/2k_sun.jpg');
     const sunGeometry = new THREE.SphereGeometry(30, 32, 32);
-    const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
+    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     sun = new THREE.Mesh(sunGeometry, sunMaterial);
 
     // Create a glow effect around the sun
     const sunGlowMaterial = new THREE.SpriteMaterial({
-        map: textureLoader.load('https://threejs.org/examples/textures/sprites/glow.png'),
+        map: textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/sprites/glow.png'),
         color: 0xFFD700,
         transparent: true,
         blending: THREE.AdditiveBlending
@@ -51,22 +57,21 @@ function init() {
     scene.add(sun);
 
     // Create the planets with correct sizes and scaled distances
-    addPlanet(57.9, 'https://www.solarsystemscope.com/textures/download/2k_mercury.jpg', 2.4, 'Mercury');    // Mercury
-    addPlanet(108.2, 'https://www.solarsystemscope.com/textures/download/2k_venus_surface.jpg', 6.1, 'Venus');     // Venus
-    addPlanet(149.6, 'https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg', 6.4, 'Earth');     // Earth
-    addPlanet(227.9, 'https://www.solarsystemscope.com/textures/download/2k_mars.jpg', 3.4, 'Mars');      // Mars
-    addPlanet(778.3, 'https://www.solarsystemscope.com/textures/download/2k_jupiter.jpg', 69.9, 'Jupiter');  // Jupiter
-    addPlanet(1427, 'https://www.solarsystemscope.com/textures/download/2k_saturn.jpg', 58.2, 'Saturn');    // Saturn
-    addPlanet(2871, 'https://www.solarsystemscope.com/textures/download/2k_uranus.jpg', 25.4, 'Uranus');    // Uranus
-    addPlanet(4497, 'https://www.solarsystemscope.com/textures/download/2k_neptune.jpg', 24.6, 'Neptune');   // Neptune
+    addPlanet(57.9, 0xaaaaaa, 2.4, 'Mercury');    // Mercury
+    addPlanet(108.2, 0xffd700, 6.1, 'Venus');     // Venus
+    addPlanet(149.6, 0x0000ff, 6.4, 'Earth');     // Earth
+    addPlanet(227.9, 0xff4500, 3.4, 'Mars');      // Mars
+    addPlanet(778.3, 0xffa500, 69.9, 'Jupiter');  // Jupiter
+    addPlanet(1427, 0xffff00, 58.2, 'Saturn');    // Saturn
+    addPlanet(2871, 0x00bfff, 25.4, 'Uranus');    // Uranus
+    addPlanet(4497, 0x0000ff, 24.6, 'Neptune');   // Neptune
 
     animate();
 }
 
-function addPlanet(distance, textureURL, radius, name) {
-    const texture = textureLoader.load(textureURL);
+function addPlanet(distance, color, radius, name) {
     const geometry = new THREE.SphereGeometry(radius, 32, 32);
-    const material = new THREE.MeshPhongMaterial({ map: texture });
+    const material = new THREE.MeshPhongMaterial({ color: color });
     const planet = new THREE.Mesh(geometry, material);
     planet.position.set(distance, 0, 0); // Scaled down distances for visualization
     planet.userData = { distance, angle: 0, name, path: [] };
@@ -94,6 +99,7 @@ function animate() {
     updatePlanets();
     controls.update();
     renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
 }
 
 function updatePlanets() {
@@ -147,6 +153,7 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 window.addEventListener('click', onPlanetClick);
