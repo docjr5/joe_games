@@ -38,6 +38,8 @@ function init() {
         if (intersects.length > 0) {
             const selectedPlanet = intersects[0].object;
             controls.target.copy(selectedPlanet.position);
+            controls.update();
+            followPlanet(selectedPlanet);
         }
     });
     
@@ -89,6 +91,22 @@ function addPlanet(distance, color, radius, name) {
     planet.userData = { distance, angle: 0, name, path: [] };
     scene.add(planet);
     planets.push(planet);
+
+    // Initialize the trail
+    initializeTrail(planet);
+}
+
+function initializeTrail(planet) {
+    const maxPathLength = Math.ceil(2 * Math.PI * planet.userData.distance); // Set path length to the circumference of the orbit
+    for (let i = 0; i < maxPathLength; i++) {
+        const angle = (i / maxPathLength) * 2 * Math.PI;
+        const position = new THREE.Vector3(
+            planet.userData.distance * Math.cos(angle),
+            0,
+            planet.userData.distance * Math.sin(angle)
+        );
+        planet.userData.path.push(position);
+    }
 }
 
 function animate() {
@@ -100,7 +118,7 @@ function animate() {
 
 function updatePlanets() {
     planets.forEach(planet => {
-        planet.userData.angle += 0.01 / Math.sqrt(planet.userData.distance); // Adjust speed based on distance
+        planet.userData.angle += 0.03 / Math.sqrt(planet.userData.distance); // Adjust speed based on distance
         planet.position.x = planet.userData.distance * Math.cos(planet.userData.angle);
         planet.position.z = planet.userData.distance * Math.sin(planet.userData.angle);
         updateTrail(planet);
@@ -123,6 +141,37 @@ function updateTrail(planet) {
     scene.remove(planet.userData.pathLine);
     planet.userData.pathLine = pathLine;
     scene.add(pathLine);
+}
+
+let followPlanetEnabled = false;
+let followedPlanet = null;
+
+function followPlanet(planet) {
+    followPlanetEnabled = true;
+    followedPlanet = planet;
+}
+
+function stopFollowingPlanet() {
+    followPlanetEnabled = false;
+    followedPlanet = null;
+}
+
+function updateCamera() {
+    if (followPlanetEnabled && followedPlanet) {
+        camera.position.x = followedPlanet.position.x + 100;
+        camera.position.y = followedPlanet.position.y + 100;
+        camera.position.z = followedPlanet.position.z + 100;
+        controls.target.copy(followedPlanet.position);
+        controls.update();
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    updatePlanets();
+    updateCamera(); // Add this line to update camera position if following a planet
+    controls.update();
+    renderer.render(scene, camera);
 }
 
 function startSimulation() {
