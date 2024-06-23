@@ -9,16 +9,16 @@ let lastBasketX = basketX;
 let basketVelocity = 0;
 let currentPaddle = 0;
 const paddles = [
-    { width: 105, height: 16, color: 'magenta' },
+    { width: 100, height: 16, color: 'magenta' },
     { width: 95, height: 16, color: 'lime' },
-    { width: 85, height: 16, color: 'blue' }
+    { width: 90, height: 16, color: 'blue' }
 ];
 const basketBottomMargin = 50; // Margin from the bottom
 
-const initialBallRadius = 7.5; // Reduced size by about 10%
-const initialSpeed = 3; // Fixed initial speed
+const initialBallRadius = 7.65; // Reduced size by about 10%
+const initialSpeed = 4; // Fixed initial speed
 const maxIncrementSpeed = 6; // Maximum speed due to increments
-const speedIncrement = 0.15; // Speed increment per score point
+const speedIncrement = 0.1; // Speed increment per score point
 let balls = [];
 let gameActive = false;
 
@@ -51,7 +51,6 @@ function drawBasket() {
     ctx.closePath();
     ctx.shadowBlur = 0; // Reset shadowBlur after drawing
 }
-
 
 function updateScore() {
     document.getElementById('score').innerText = 'Score: ' + score;
@@ -125,9 +124,9 @@ function addNewBall(color) {
 function animate() {
     if (!gameActive) return;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Create trail effect
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Create trail effect for the ball
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawBasket();
+    drawBasket(); // Draw the paddle with trail effect
 
     balls.forEach((ball, index) => {
         drawBall(ball);
@@ -271,9 +270,14 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
+function startGame() {
+    document.getElementById('launchModal').style.display = 'none';
+    resetGame();
+}
+
 function init() {
     updateScore();
-    resetGame();
+    document.getElementById('launchModal').style.display = 'block';
 }
 
 window.addEventListener('resize', resizeCanvas);
