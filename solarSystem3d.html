@@ -44,9 +44,9 @@
             overflow-y: auto;
             text-align: left;
             font-size: 14px;
-            color: magenta;
+            color: #EEEEEE;
             font-family: 'Courier New', Courier, monospace;
-            text-shadow: 0 0 5px magenta;
+            text-shadow: 0 0 5px #EEEEEE;
         }
         #versionInfo p {
             margin: 5px 0;
@@ -54,6 +54,7 @@
         }
         #versionInfo ul {
             padding-left: 20px;
+            color: #EEEEEE;
         }
     </style>
 </head>
@@ -62,7 +63,14 @@
         <h1>3D Solar System Simulation</h1>
         <button onclick="startSimulation()">Start Simulation</button>
         <div id="versionInfo">
-            <p>Version 1.0</p>
+            <p>Version 0.12</p>
+            <ul>
+                <li>Added textures for planets using external links.</li>
+                <li>Implemented interactive planet selection and smooth camera transitions.</li>
+                <li>Enhanced visualization with labels and outlines for planets.</li>
+                <li>Improved solar system speed and scale accuracy.</li>
+            </ul>
+            <p>Version 0.10</p>
             <ul>
                 <li>Initial release with basic solar system simulation.</li>
                 <li>Added sun with glow effect and eight planets.</li>

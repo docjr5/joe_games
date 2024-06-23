@@ -1,6 +1,9 @@
 let scene, camera, renderer, controls;
 let sun, planets = [];
+let selectedPlanet = null;
 const G = 0.05; // Gravitational constant
+
+const textureLoader = new THREE.TextureLoader();
 
 function init() {
     // Create a scene
@@ -19,8 +22,8 @@ function init() {
     // Add orbit controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+    // Add ambient light (very low intensity)
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.1); // Very soft white light
     scene.add(ambientLight);
 
     // Add point light for the sun
@@ -29,13 +32,14 @@ function init() {
     scene.add(pointLight);
 
     // Create the Sun
+    const sunTexture = textureLoader.load('https://www.solarsystemscope.com/textures/download/2k_sun.jpg');
     const sunGeometry = new THREE.SphereGeometry(30, 32, 32);
-    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
     sun = new THREE.Mesh(sunGeometry, sunMaterial);
 
     // Create a glow effect around the sun
     const sunGlowMaterial = new THREE.SpriteMaterial({
-        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/sprites/glow.png'),
+        map: textureLoader.load('https://threejs.org/examples/textures/sprites/glow.png'),
         color: 0xFFD700,
         transparent: true,
         blending: THREE.AdditiveBlending
@@ -46,27 +50,43 @@ function init() {
 
     scene.add(sun);
 
-    // Create the planets with correct sizes and distances
-    addPlanet(57900000, 0xaaaaaa, 2.4, 'Mercury');
-    addPlanet(108200000, 0xffd700, 6.1, 'Venus');
-    addPlanet(149600000, 0x0000ff, 6.4, 'Earth');
-    addPlanet(227900000, 0xff4500, 3.4, 'Mars');
-    addPlanet(778300000, 0xffa500, 69.9, 'Jupiter');
-    addPlanet(1427000000, 0xffff00, 58.2, 'Saturn');
-    addPlanet(2871000000, 0x00bfff, 25.4, 'Uranus');
-    addPlanet(4497000000, 0x0000ff, 24.6, 'Neptune');
+    // Create the planets with correct sizes and scaled distances
+    addPlanet(57.9, 'https://www.solarsystemscope.com/textures/download/2k_mercury.jpg', 2.4, 'Mercury');    // Mercury
+    addPlanet(108.2, 'https://www.solarsystemscope.com/textures/download/2k_venus_surface.jpg', 6.1, 'Venus');     // Venus
+    addPlanet(149.6, 'https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg', 6.4, 'Earth');     // Earth
+    addPlanet(227.9, 'https://www.solarsystemscope.com/textures/download/2k_mars.jpg', 3.4, 'Mars');      // Mars
+    addPlanet(778.3, 'https://www.solarsystemscope.com/textures/download/2k_jupiter.jpg', 69.9, 'Jupiter');  // Jupiter
+    addPlanet(1427, 'https://www.solarsystemscope.com/textures/download/2k_saturn.jpg', 58.2, 'Saturn');    // Saturn
+    addPlanet(2871, 'https://www.solarsystemscope.com/textures/download/2k_uranus.jpg', 25.4, 'Uranus');    // Uranus
+    addPlanet(4497, 'https://www.solarsystemscope.com/textures/download/2k_neptune.jpg', 24.6, 'Neptune');   // Neptune
 
     animate();
 }
 
-function addPlanet(distance, color, radius, name) {
+function addPlanet(distance, textureURL, radius, name) {
+    const texture = textureLoader.load(textureURL);
     const geometry = new THREE.SphereGeometry(radius, 32, 32);
-    const material = new THREE.MeshPhongMaterial({ color: color });
+    const material = new THREE.MeshPhongMaterial({ map: texture });
     const planet = new THREE.Mesh(geometry, material);
-    planet.position.set(distance / 1000000, 0, 0); // Scale down distances for visualization
-    planet.userData = { distance: distance / 1000000, angle: 0, name, path: [] };
+    planet.position.set(distance, 0, 0); // Scaled down distances for visualization
+    planet.userData = { distance, angle: 0, name, path: [] };
     scene.add(planet);
     planets.push(planet);
+
+    // Create label
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = name;
+    labelDiv.style.color = `#${material.color.getHexString()}`;
+    const label = new THREE.CSS2DObject(labelDiv);
+    label.position.set(0, radius + 4, 0);
+    planet.add(label);
+
+    // Add outline
+    const outlineMaterial = new THREE.MeshBasicMaterial({ color: material.color, side: THREE.BackSide });
+    const outlineMesh = new THREE.Mesh(geometry, outlineMaterial);
+    outlineMesh.scale.set(1.1, 1.1, 1.1);
+    planet.add(outlineMesh);
 }
 
 function animate() {
@@ -83,6 +103,11 @@ function updatePlanets() {
         planet.position.z = planet.userData.distance * Math.sin(planet.userData.angle);
         updateTrail(planet);
     });
+
+    if (selectedPlanet) {
+        controls.target.copy(selectedPlanet.position);
+        camera.position.lerp(selectedPlanet.position.clone().add(new THREE.Vector3(50, 50, 100)), 0.1);
+    }
 }
 
 function updateTrail(planet) {
@@ -103,9 +128,19 @@ function updateTrail(planet) {
     scene.add(pathLine);
 }
 
-function startSimulation() {
-    document.getElementById('launchModal').style.display = 'none';
-    init();
+function onPlanetClick(event) {
+    const mouse = new THREE.Vector2();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(planets);
+
+    if (intersects.length > 0) {
+        selectedPlanet = intersects[0].object;
+        controls.target.copy(selectedPlanet.position);
+    }
 }
 
 window.addEventListener('resize', () => {
@@ -113,3 +148,10 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+window.addEventListener('click', onPlanetClick);
+
+function startSimulation() {
+    document.getElementById('launchModal').style.display = 'none';
+    init();
+}
