@@ -20,7 +20,7 @@ const initialSpeed = 4; // Fixed initial speed
 const maxIncrementSpeed = 6; // Maximum speed due to increments
 const speedIncrement = 0.1; // Speed increment per score point
 let balls = [];
-const gameActive = false;
+let gameActive = false;
 
 function resizeCanvas() {
     const gameContainer = document.getElementById('gameContainer');
@@ -72,6 +72,7 @@ function resetGame() {
         createBall('cyan')
     ];
     updateScore();
+    gameActive = false;
     hideGameOverModal();
     startCountdown();
 }
