@@ -1,6 +1,5 @@
 let scene, camera, renderer, controls, labelRenderer;
 let sun, planets = [];
-let selectedPlanet = null;
 const G = 0.05; // Gravitational constant
 
 function init() {
@@ -85,14 +84,12 @@ function addPlanet(distance, color, radius, name) {
     const label = new THREE.CSS2DObject(labelDiv);
     label.position.set(0, radius + 4, 0);
     planet.add(label);
-    label.visible = false;
 
     // Add outline
     const outlineMaterial = new THREE.MeshBasicMaterial({ color: material.color, side: THREE.BackSide });
     const outlineMesh = new THREE.Mesh(geometry, outlineMaterial);
     outlineMesh.scale.set(1.1, 1.1, 1.1);
     planet.add(outlineMesh);
-    outlineMesh.visible = false;
 }
 
 function animate() {
@@ -110,11 +107,6 @@ function updatePlanets() {
         planet.position.z = planet.userData.distance * Math.sin(planet.userData.angle);
         updateTrail(planet);
     });
-
-    if (selectedPlanet) {
-        controls.target.copy(selectedPlanet.position);
-        camera.position.lerp(selectedPlanet.position.clone().add(new THREE.Vector3(50, 50, 100)), 0.1);
-    }
 }
 
 function updateTrail(planet) {
@@ -127,51 +119,12 @@ function updateTrail(planet) {
     scene.add(pathLine);
 }
 
-function onPlanetClick(event) {
-    const mouse = new THREE.Vector2();
-    if (event.changedTouches) {
-        mouse.x = (event.changedTouches[0].clientX / window.innerWidth) * 2 - 1;
-        mouse.y = - (event.changedTouches[0].clientY / window.innerHeight) * 2 + 1;
-    } else {
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    }
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(planets);
-
-    if (intersects.length > 0) {
-        selectedPlanet = intersects[0].object;
-        controls.target.copy(selectedPlanet.position);
-
-        planets.forEach(planet => {
-            const isSelected = planet === selectedPlanet;
-            planet.children.forEach(child => {
-                if (child instanceof THREE.CSS2DObject || child instanceof THREE.Mesh && child.material.side === THREE.BackSide) {
-                    child.visible = isSelected;
-                }
-            });
-        });
-    }
-}
-
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-function onMouseDown(event) {
-    if (event.target !== renderer.domElement) return;
-
-    onPlanetClick(event);
-    controls.enabled = !selectedPlanet; // Disable controls if a planet is selected
-}
-
-window.addEventListener('mousedown', onMouseDown);
-window.addEventListener('touchstart', onMouseDown);
 
 function startSimulation() {
     document.getElementById('launchModal').style.display = 'none';
