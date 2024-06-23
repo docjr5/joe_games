@@ -1,6 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
+canvas.width = Math.min(window.innerWidth, 1000);
 canvas.height = window.innerHeight;
 
 let score = 0;
@@ -33,7 +33,7 @@ function drawBall(ball) {
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fillStyle = ball.color;
     ctx.shadowColor = ball.color;
-    ctx.shadowBlur = 15; // Reduced glow size
+    ctx.shadowBlur = 10; // Reduced glow size
     ctx.fill();
     ctx.closePath();
     ctx.shadowBlur = 0; // Reset shadowBlur after drawing
