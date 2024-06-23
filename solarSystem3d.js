@@ -7,10 +7,10 @@ function init() {
     scene = new THREE.Scene();
 
     // Create a camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 500;
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+    camera.position.z = 5000;
 
-    // Create a renderer
+    // Create a renderer with antialiasing
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
@@ -23,7 +23,7 @@ function init() {
     scene.add(ambientLight);
 
     // Add point light for the sun
-    const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
+    const pointLight = new THREE.PointLight(0xffffff, 2, 100000);
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
 
@@ -40,20 +40,20 @@ function init() {
         blending: THREE.AdditiveBlending
     });
     const sunGlow = new THREE.Sprite(sunGlowMaterial);
-    sunGlow.scale.set(100, 100, 1.0);
+    sunGlow.scale.set(200, 200, 1.0); // Increased the glow size
     sun.add(sunGlow);
 
     scene.add(sun);
 
     // Create the planets with correct sizes and distances
-    addPlanet(57.9, 0xaaaaaa, 2.4, 'Mercury');
-    addPlanet(108.2, 0xffd700, 6.1, 'Venus');
-    addPlanet(149.6, 0x0000ff, 6.4, 'Earth');
-    addPlanet(227.9, 0xff4500, 3.4, 'Mars');
-    addPlanet(778.3, 0xffa500, 69.9, 'Jupiter');
-    addPlanet(1427, 0xffff00, 58.2, 'Saturn');
-    addPlanet(2871, 0x00bfff, 25.4, 'Uranus');
-    addPlanet(4497, 0x0000ff, 24.6, 'Neptune');
+    addPlanet(57900000, 0xaaaaaa, 2.4, 'Mercury');
+    addPlanet(108200000, 0xffd700, 6.1, 'Venus');
+    addPlanet(149600000, 0x0000ff, 6.4, 'Earth');
+    addPlanet(227900000, 0xff4500, 3.4, 'Mars');
+    addPlanet(778300000, 0xffa500, 69.9, 'Jupiter');
+    addPlanet(1427000000, 0xffff00, 58.2, 'Saturn');
+    addPlanet(2871000000, 0x00bfff, 25.4, 'Uranus');
+    addPlanet(4497000000, 0x0000ff, 24.6, 'Neptune');
 
     animate();
 }
@@ -62,8 +62,8 @@ function addPlanet(distance, color, radius, name) {
     const geometry = new THREE.SphereGeometry(radius, 32, 32);
     const material = new THREE.MeshPhongMaterial({ color: color });
     const planet = new THREE.Mesh(geometry, material);
-    planet.position.set(distance, 0, 0);
-    planet.userData = { distance, angle: 0, name, path: [] };
+    planet.position.set(distance / 1000000, 0, 0); // Scale down distances for visualization
+    planet.userData = { distance: distance / 1000000, angle: 0, name, path: [] };
     scene.add(planet);
     planets.push(planet);
 }
