@@ -1,7 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+resizeCanvas();
 
 let score = 0;
 let highScore = localStorage.getItem('highScore') || 0;
@@ -9,34 +8,44 @@ let basketX = canvas.width / 2;
 let currentPaddle = 0;
 const paddles = [
     { width: 100, height: 16, color: 'magenta' },
-    { width: 90, height: 16, color: 'lime' },
-    { width: 80, height: 16, color: 'blue' }
+    { width: 95, height: 16, color: 'lime' },
+    { width: 90, height: 16, color: 'blue' }
 ];
 const basketBottomMargin = 50; // Margin from the bottom
 
 const initialBallRadius = 7.65; // Reduced size by about 10%
+const maxSpeed = 5;
 let balls = [
     {
         x: canvas.width / 2,
         y: 50,
         radius: initialBallRadius,
-        speedX: 1.5,
-        speedY: 1.5,
-        color: 'cyan'
+        speedX: (Math.random() * 2 - 1) * maxSpeed,
+        speedY: (Math.random() * 2 - 1) * maxSpeed,
+        color: 'cyan',
+        spinX: 0,
+        spinY: 0,
+        glowPulse: 0
     }
 ];
 const speedIncrement = 0.05; // Slower rate of increase
 let gameActive = false;
+
+function resizeCanvas() {
+    canvas.width = Math.min(window.innerWidth, 1000);
+    canvas.height = window.innerHeight;
+}
 
 function drawBall(ball) {
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fillStyle = ball.color;
     ctx.shadowColor = ball.color;
-    ctx.shadowBlur = 15; // Reduced glow size
+    ctx.shadowBlur = 10 + ball.glowPulse; // Reduced glow size with pulse effect
     ctx.fill();
     ctx.closePath();
     ctx.shadowBlur = 0; // Reset shadowBlur after drawing
+    ball.glowPulse = Math.max(0, ball.glowPulse - 1); // Decay glow pulse
 }
 
 function drawBasket() {
@@ -72,9 +81,12 @@ function resetGame() {
             x: canvas.width / 2,
             y: 50,
             radius: initialBallRadius,
-            speedX: (Math.random() < 0.5 ? -1.5 : 1.5),
-            speedY: 1.5,
-            color: 'cyan'
+            speedX: (Math.random() * 2 - 1) * maxSpeed,
+            speedY: (Math.random() * 2 - 1) * maxSpeed,
+            color: 'cyan',
+            spinX: 0,
+            spinY: 0,
+            glowPulse: 0
         }
     ];
     updateScore();
@@ -106,9 +118,12 @@ function addNewBall(color) {
         x: canvas.width / 2,
         y: 50,
         radius: initialBallRadius,
-        speedX: (Math.random() < 0.5 ? -balls[0].speedX : balls[0].speedX),
-        speedY: balls[0].speedY,
-        color: color
+        speedX: (Math.random() * 2 - 1) * maxSpeed,
+        speedY: (Math.random() * 2 - 1) * maxSpeed,
+        color: color,
+        spinX: 0,
+        spinY: 0,
+        glowPulse: 0
     });
 }
 
@@ -123,15 +138,21 @@ function animate() {
         drawBall(ball);
 
         // Move the ball
-        ball.x += ball.speedX;
-        ball.y += ball.speedY;
+        ball.x += ball.speedX + ball.spinX;
+        ball.y += ball.speedY + ball.spinY;
+
+        // Apply spin decay
+        ball.spinX *= 0.98;
+        ball.spinY *= 0.98;
 
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
             ball.speedX = -ball.speedX;
+            ball.glowPulse = 20; // Trigger glow pulse on collision
         }
         if (ball.y - ball.radius < 0) {
             ball.speedY = -ball.speedY;
+            ball.glowPulse = 20; // Trigger glow pulse on collision
         }
 
         // Ball hits the bottom
@@ -151,6 +172,9 @@ function animate() {
             ball.x > basketX && ball.x < basketX + paddle.width &&
             ball.y + ball.radius <= canvas.height - paddle.height - basketBottomMargin + ball.speedY) {
             ball.speedY = -ball.speedY;
+            ball.spinX = (ball.x - (basketX + paddle.width / 2)) * 0.1; // Impart spin based on where the ball hits the paddle
+            ball.spinY = 0;
+            ball.glowPulse = 20; // Trigger glow pulse on collision
             score++;
             if (score < 30) {
                 ball.speedX += (ball.speedX > 0 ? speedIncrement : -speedIncrement);
@@ -167,11 +191,49 @@ function animate() {
                 const dy = otherBall.y - ball.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance < ball.radius + otherBall.radius) {
-                    // Simple elastic collision
-                    ball.speedX = -ball.speedX;
-                    ball.speedY = -ball.speedY;
-                    otherBall.speedX = -otherBall.speedX;
-                    otherBall.speedY = -otherBall.speedY;
+                    // Handle ball collision
+                    const angle = Math.atan2(dy, dx);
+                    const sin = Math.sin(angle);
+                    const cos = Math.cos(angle);
+
+                    // Rotate ball's position
+                    const x1 = 0;
+                    const y1 = 0;
+
+                    // Rotate otherBall's position
+                    const x2 = dx * cos + dy * sin;
+                    const y2 = dy * cos - dx * sin;
+
+                    // Rotate ball's velocity
+                    const vx1 = ball.speedX * cos + ball.speedY * sin;
+                    const vy1 = ball.speedY * cos - ball.speedX * sin;
+
+                    // Rotate otherBall's velocity
+                    const vx2 = otherBall.speedX * cos + otherBall.speedY * sin;
+                    const vy2 = otherBall.speedY * cos - otherBall.speedX * sin;
+
+                    // Collision reaction
+                    const vxTotal = vx1 - vx2;
+                    vx1 = ((ball.radius - otherBall.radius) * vx1 + 2 * otherBall.radius * vx2) / (ball.radius + otherBall.radius);
+                    vx2 = vxTotal + vx1;
+
+                    // Update ball's position
+                    ball.x += vx1 * cos - vy1 * sin;
+                    ball.y += vy1 * cos + vx1 * sin;
+
+                    // Update otherBall's position
+                    otherBall.x += vx2 * cos - vy2 * sin;
+                    otherBall.y += vy2 * cos + vx2 * sin;
+
+                    // Update velocities
+                    ball.speedX = vx1 * cos - vy1 * sin;
+                    ball.speedY = vy1 * cos + vx1 * sin;
+                    otherBall.speedX = vx2 * cos - vy2 * sin;
+                    otherBall.speedY = vy2 * cos + vx2 * sin;
+
+                    // Trigger glow pulse on collision
+                    ball.glowPulse = 20;
+                    otherBall.glowPulse = 20;
                 }
             }
         }
