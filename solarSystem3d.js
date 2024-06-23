@@ -1,4 +1,4 @@
-let scene, camera, renderer, controls, labelRenderer, dragControls;
+let scene, camera, renderer, controls, labelRenderer;
 let sun, planets = [];
 let selectedPlanet = null;
 const G = 0.05; // Gravitational constant
@@ -63,15 +63,6 @@ function init() {
             planet.userData.path.push(new THREE.Vector3(x, 0, z));
         }
         updateTrail(planet);
-    });
-
-    // Create drag controls
-    dragControls = new THREE.DragControls(planets, camera, renderer.domElement);
-    dragControls.addEventListener('dragstart', function (event) {
-        controls.enabled = false;
-    });
-    dragControls.addEventListener('dragend', function (event) {
-        controls.enabled = true;
     });
 
     animate();
@@ -172,8 +163,15 @@ window.addEventListener('resize', () => {
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-window.addEventListener('click', onPlanetClick);
-window.addEventListener('touchstart', onPlanetClick);
+function onMouseDown(event) {
+    if (event.target !== renderer.domElement) return;
+
+    onPlanetClick(event);
+    controls.enabled = !selectedPlanet; // Disable controls if a planet is selected
+}
+
+window.addEventListener('mousedown', onMouseDown);
+window.addEventListener('touchstart', onMouseDown);
 
 function startSimulation() {
     document.getElementById('launchModal').style.display = 'none';
