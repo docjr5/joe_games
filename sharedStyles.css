@@ -51,9 +51,9 @@ canvas {
 
 #versionInfo {
     margin-top: 10px;
-    width: 75%;
+    width: 85%;
     max-width: 1000px;
-    max-height: 450px;
+    max-height: 850px;
     overflow-y: auto;
     text-align: left;
     font-size: 14px;

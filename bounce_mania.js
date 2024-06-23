@@ -137,7 +137,7 @@ function animate() {
         ball.spinY *= 0.97; // Slower decay
 
         // Apply speed boost decay
-        ball.speedBoost *= 0.99; // Slower decay
+        ball.speedBoost *= 1; // Slower decay
 
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width) {
@@ -174,7 +174,7 @@ function animate() {
 
             const impactPoint = ball.x - (basketX + paddle.width / 2);
             ball.spinX = impactPoint * 0.2; // More pronounced spin effect
-            ball.speedBoost = Math.abs(basketVelocity) * 0.1; // Speed boost based on paddle velocity
+            ball.speedBoost = -Math.abs(basketVelocity) * 0.1; // Speed boost based on paddle velocity
 
             ball.glowPulse = 30; // Trigger glow pulse on collision
             score++;
@@ -183,8 +183,8 @@ function animate() {
             let currentSpeed = Math.sqrt(newSpeedX * newSpeedX + newSpeedY * newSpeedY);
 
             if (currentSpeed <= maxIncrementSpeed) {
-                ball.speedX = newSpeedX;
-                ball.speedY = newSpeedY;
+            ball.speedX = newSpeedX;
+            ball.speedY = newSpeedY;
             }
             updateScore();
         }

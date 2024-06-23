@@ -3,8 +3,6 @@ let sun, planets = [];
 let selectedPlanet = null;
 const G = 0.05; // Gravitational constant
 
-const textureLoader = new THREE.TextureLoader();
-
 function init() {
     // Create a scene
     scene = new THREE.Scene();
@@ -44,18 +42,6 @@ function init() {
     const sunGeometry = new THREE.SphereGeometry(30, 32, 32);
     const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     sun = new THREE.Mesh(sunGeometry, sunMaterial);
-
-    // Create a glow effect around the sun
-    const sunGlowMaterial = new THREE.SpriteMaterial({
-        map: textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/sprites/glow.png'),
-        color: 0xFFD700,
-        transparent: true,
-        blending: THREE.AdditiveBlending
-    });
-    const sunGlow = new THREE.Sprite(sunGlowMaterial);
-    sunGlow.scale.set(200, 200, 1.0); // Increased the glow size
-    sun.add(sunGlow);
-
     scene.add(sun);
 
     // Create the planets with correct sizes and scaled distances
