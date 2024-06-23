@@ -5,18 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joe's Bounce Mania</title>
     <style>
-        body {
+        html, body {
             margin: 0;
+            padding: 0;
+            height: 100%;
             overflow: hidden;
             background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #2c2c2c;
+            box-sizing: border-box;
         }
         canvas {
             display: block;
-            border: 2px solid #2c2c2c;
+            width: 100%;
+            height: 100%;
         }
         #score, #highScore {
             position: absolute;
@@ -63,14 +76,29 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="score">Score: 0</div>
-    <div id="highScore">High Score: 0</div>
-    <div id="countdown"></div>
-    <div id="gameOverModal">
-        <p>Game Over! Your score is: <span id="finalScore"></span></p>
-        <button onclick="resetGame()">Play Again</button>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+        <div id="countdown"></div>
+        <div id="gameOverModal">
+            <p>Game Over! Your score is: <span id="finalScore"></span></p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
     </div>
     <script src="bounce_mania.js"></script>
+    <script>
+        // Resize the canvas to fill the game container
+        const canvas = document.getElementById('gameCanvas');
+        const gameContainer = document.getElementById('gameContainer');
+
+        function resizeCanvas() {
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Initial resize
+    </script>
 </body>
 </html>

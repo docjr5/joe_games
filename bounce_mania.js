@@ -9,8 +9,8 @@ let basketX = canvas.width / 2;
 let currentPaddle = 0;
 const paddles = [
     { width: 100, height: 16, color: 'magenta' },
-    { width: 95, height: 16, color: 'lime' },
-    { width: 90, height: 16, color: 'blue' }
+    { width: 90, height: 16, color: 'lime' },
+    { width: 80, height: 16, color: 'blue' }
 ];
 const basketBottomMargin = 50; // Margin from the bottom
 
