@@ -17,8 +17,6 @@ function init() {
 
     // Add orbit controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = false; // Disable zooming
-    controls.enablePan = false; // Disable panning
     controls.enableDamping = true; // Enable damping for smooth movement
     controls.dampingFactor = 0.05; // Set damping factor
     controls.rotateSpeed = 0.1; // Set rotation speed
@@ -37,10 +35,13 @@ function init() {
         const intersects = raycaster.intersectObjects(planets);
         if (intersects.length > 0) {
             const selectedPlanet = intersects[0].object;
-            controls.target.copy(selectedPlanet.position);
-            controls.update();
             followPlanet(selectedPlanet);
         }
+    });
+
+    // Add event listener to break lock on pan
+    controls.addEventListener('start', () => {
+        stopFollowingPlanet();
     });
 
     // Add ambient light
@@ -48,7 +49,7 @@ function init() {
     scene.add(ambientLight);
 
     // Add point light for the sun
-    const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
+    const pointLight = new THREE.PointLight(0xffffff, 5, 5000); // Increased intensity and distance
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
 
