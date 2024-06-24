@@ -21,6 +21,11 @@ const maxIncrementSpeed = 6; // Maximum speed due to increments
 const speedIncrement = 0.1; // Speed increment per score point
 let balls = [];
 let gameActive = false;
+let powerUps = [];
+let powerUpActive = false;
+let powerUpType = '';
+let powerUpTimeout;
+
 
 function resizeCanvas() {
     const gameContainer = document.getElementById('gameContainer');
@@ -79,9 +84,14 @@ function drawBasket() {
 }
 
 function updateScore() {
-    document.getElementById('score').innerText = 'Score: ' + score;
+    let displayScore = score;
+    if (powerUpType === '2XScore') {
+        displayScore = score * 2;
+    }
+    document.getElementById('score').innerText = 'Score: ' + displayScore;
     document.getElementById('highScore').innerText = 'High Score: ' + highScore;
 }
+
 
 function showGameOverModal() {
     const modal = document.getElementById('gameOverModal');
@@ -100,9 +110,14 @@ function resetGame() {
     balls = [
         createBall('cyan', initialSpeed)
     ];
+    powerUps = [];
+    powerUpActive = false;
+    powerUpType = '';
+    clearTimeout(powerUpTimeout);
     updateScore();
     gameActive = false;
     hideGameOverModal();
+    hidePowerUpDisplay(); // Clear power-up display
     startCountdown();
 }
 
@@ -125,6 +140,107 @@ function createBall(color, speed) {
     };
 }
 
+
+function addNewBall(color, speed) {
+    balls.push(createBall(color, speed));
+}
+
+function createPowerUp() {
+    const x = Math.random() * canvas.width;
+    const y = 0;
+    const type = Math.random() > 0.5 ? 'increasePaddle' : '2XScore';
+    powerUps.push({ x, y, type });
+}
+function drawPowerUps() {
+    powerUps.forEach(powerUp => {
+        if (powerUp.type === 'increasePaddle') {
+            ctx.font = "40px Arial"; // Adjust the font size as needed
+            ctx.fillStyle = 'megenta';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText("±", powerUp.x, powerUp.y);
+        }
+        if (powerUp.type === '2XScore') {
+            ctx.font = "30px Arial"; // Adjust the font size as needed
+            ctx.fillStyle = 'lime';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText("2X", powerUp.x, powerUp.y);
+        }
+    });
+}
+
+
+function checkPowerUpCollision() {
+    powerUps = powerUps.filter(powerUp => {
+        const paddle = paddles[currentPaddle];
+        if (powerUp.y + 10 > canvas.height - paddle.height - basketBottomMargin &&
+            powerUp.y < canvas.height - paddle.height - basketBottomMargin + 10 &&
+            powerUp.x > basketX && powerUp.x < basketX + paddle.width) {
+            activatePowerUp(powerUp.type);
+            return false;
+        }
+        return true;
+    });
+}
+
+let powerUpTimerInterval;
+
+function activatePowerUp(type) {
+    if (powerUpActive) return; // Do not activate if another power-up is active
+
+    powerUpActive = true;
+    powerUpType = type;
+
+    if (type === 'increasePaddle') {
+        paddles[currentPaddle].width *= 1.75;
+    }
+    if (type === '2XScore') {
+        score *= 2;
+        updateScore();
+    }
+
+    showPowerUpDisplay(type, 15);
+    powerUpTimeout = setTimeout(deactivatePowerUp, 15000);
+}
+
+function deactivatePowerUp() {
+    if (powerUpType === 'increasePaddle') {
+        paddles[currentPaddle].width /= 1.75; // Reset to the original width
+    }
+
+    powerUpActive = false;
+    powerUpType = '';
+    hidePowerUpDisplay();
+    clearInterval(powerUpTimerInterval);
+}
+
+
+function showPowerUpDisplay(type, duration) {
+    const powerUpDisplay = document.getElementById('powerUpDisplay');
+    const powerUpTypeElement = document.getElementById('powerUpType');
+    const powerUpTimerElement = document.getElementById('powerUpTimer');
+
+    powerUpTypeElement.innerText = type === 'increasePaddle' ? 'Paddle Size Increase' : '2X Score';
+    powerUpTimerElement.innerText = `${duration}s`;
+    powerUpDisplay.classList.remove('hidden');
+
+    let remainingTime = duration;
+    powerUpTimerInterval = setInterval(() => {
+        remainingTime--;
+        powerUpTimerElement.innerText = `${remainingTime}s`;
+
+        if (remainingTime <= 0) {
+            clearInterval(powerUpTimerInterval);
+        }
+    }, 1000);
+}
+
+function hidePowerUpDisplay() {
+    const powerUpDisplay = document.getElementById('powerUpDisplay');
+    powerUpDisplay.classList.add('hidden');
+}
+
 function startCountdown() {
     const countdownElement = document.getElementById('countdown');
     let countdown = 3;
@@ -139,13 +255,15 @@ function startCountdown() {
             countdownElement.innerText = '';
             gameActive = true;
             animate();
+            spawnInitialPowerUp();
         }
     }, 1000);
 }
 
-function addNewBall(color, speed) {
-    balls.push(createBall(color, speed));
+function spawnInitialPowerUp() {
+    setInterval(createPowerUp, 45000);
 }
+
 
 function animate() {
     if (!gameActive) return;
@@ -153,6 +271,7 @@ function animate() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Create trail effect for the ball
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawBasket(); // Draw the paddle with reduced trail effect
+    drawPowerUps(); // Draw power-ups
 
     balls.forEach((ball, index) => {
         drawBall(ball);
@@ -171,22 +290,21 @@ function animate() {
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width) {
             ball.x = canvas.width - ball.radius;
-            ball.speedX = -ball.speedX + ball.spinX; // Add spin effect to speed
+            ball.speedX = -ball.speedX; // Invert speed without adding spin effect
             ball.spinX = -ball.spinX; // Reverse spin direction on collision
             ball.glowPulse = 10; // Trigger glow pulse on collision
         } else if (ball.x - ball.radius < 0) {
             ball.x = ball.radius;
-            ball.speedX = -ball.speedX + ball.spinX; // Add spin effect to speed
+            ball.speedX = -ball.speedX; // Invert speed without adding spin effect
             ball.spinX = -ball.spinX; // Reverse spin direction on collision
             ball.glowPulse = 10; // Trigger glow pulse on collision
         }
         if (ball.y - ball.radius < 0) {
             ball.y = ball.radius;
-            ball.speedY = -ball.speedY + ball.spinY; // Add spin effect to speed
+            ball.speedY = -ball.speedY; // Invert speed without adding spin effect
             ball.spinY = -ball.spinY; // Reverse spin direction on collision
             ball.glowPulse = 10; // Trigger glow pulse on collision
-        }
-
+        }        
 
         // Ball hits the bottom
         if (ball.y + ball.radius > canvas.height) {
@@ -204,29 +322,33 @@ function animate() {
             ball.y - ball.radius < canvas.height - paddle.height - basketBottomMargin + ball.speedY &&
             ball.x > basketX && ball.x < basketX + paddle.width) {
             ball.speedY = -Math.abs(ball.speedY); // Ensure the ball goes upwards
-
+        
             const impactPoint = ball.x - (basketX + paddle.width / 2);
             const impactAngle = (impactPoint / (paddle.width / 2)) * (Math.PI / 4); // Max angle of 45 degrees
-
+        
             const speed = Math.sqrt(ball.speedX * ball.speedX + ball.speedY * ball.speedY);
             ball.speedX = speed * Math.sin(impactAngle); // New speedX based on impact angle
             ball.speedY = -speed * Math.cos(impactAngle); // New speedY based on impact angle
-
+        
             ball.spinX = impactPoint * 0.2; // More pronounced spin effect
             ball.speedBoost = Math.abs(basketVelocity) * 0.1; // Speed boost based on paddle velocity
-
+        
             ball.glowPulse = 30; // Trigger glow pulse on collision
-            score++;
+            
+            // Apply 2XScore multiplier
+            score += (powerUpType === '2XScore') ? 2 : 1;
+            
             let newSpeedX = ball.speedX + (ball.speedX > 0 ? speedIncrement : -speedIncrement);
             let newSpeedY = ball.speedY + (ball.speedY > 0 ? speedIncrement : -speedIncrement);
             let currentSpeed = Math.sqrt(newSpeedX * newSpeedX + newSpeedY * newSpeedY);
-
+        
             if (currentSpeed <= maxIncrementSpeed) {
                 ball.speedX = newSpeedX;
                 ball.speedY = newSpeedY;
             }
             updateScore();
         }
+        
 
         // Ball collision with other balls
         for (let i = 0; i < balls.length; i++) {
@@ -298,6 +420,7 @@ function animate() {
         }
 
     });
+    
 
     // Add new balls at specific scores
     if (score === 10 && balls.length < 2) {
@@ -310,12 +433,18 @@ function animate() {
     }
 
     // Switch paddle at specific scores
-    if (score === 30) {
+    if (score === 50) {
         currentPaddle = 1;
     }
-    if (score === 40) {
+    if (score === 70) {
         currentPaddle = 2;
     }
+
+    powerUps.forEach(powerUp => {
+        powerUp.y += initialSpeed; // Move power-ups down at initial ball speed
+    });
+
+    checkPowerUpCollision(); // Check for power-up collisions
 
     requestAnimationFrame(animate);
 }

@@ -155,3 +155,26 @@ canvas {
     font-family: 'Courier New', Courier, monospace;
     text-shadow: 0 0 5px cyan;
 }
+
+#powerUpDisplay {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#powerUpDisplay.hidden {
+    display: none;
+}
+
+#powerUpType {
+    margin-right: 10px;
+}
