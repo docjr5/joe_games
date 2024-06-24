@@ -9,11 +9,11 @@ let lastBasketX = basketX;
 let basketVelocity = 0;
 let currentPaddle = 0;
 const paddles = [
-    { width: 105, height: 8, color: 'magenta' },
-    { width: 95, height: 8, color: 'lime' },
-    { width: 85, height: 8, color: 'blue' }
+    { width: 115, height: 8, color: 'magenta' },
+    { width: 105, height: 8, color: 'lime' },
+    { width: 90, height: 8, color: 'blue' }
 ];
-const basketBottomMargin = 50; // Margin from the bottom
+const basketBottomMargin = 80; // Margin from the bottom
 
 const initialBallRadius = 7.5; // Reduced size by about 10%
 const initialSpeed = 4; // Fixed initial speed
@@ -38,6 +38,35 @@ function drawBall(ball) {
     ctx.closePath();
     ctx.shadowBlur = 0; // Reset shadowBlur after drawing
     ball.glowPulse = Math.max(0, ball.glowPulse - 1); // Decay glow pulse
+
+    // Draw the spin indicator (3 smaller balls)
+    drawSpinIndicator(ball);
+}
+
+function drawSpinIndicator(ball) {
+    const spinMagnitude = Math.sqrt(ball.spinX * ball.spinX + ball.spinY * ball.spinY);
+    const distance = Math.min(spinMagnitude * 5, ball.radius * 2); // Adjust the factor as needed
+    const baseAngle = (Date.now() / 100) % (2 * Math.PI); // Adjust speed of rotation as needed
+
+    for (let i = 0; i < 3; i++) {
+        const angle = baseAngle + (i * 2 * Math.PI) / 3; // 120 degrees apart
+        const indicatorX = ball.x + distance * Math.cos(angle);
+        const indicatorY = ball.y + distance * Math.sin(angle);
+
+        ctx.beginPath();
+        ctx.arc(indicatorX, indicatorY, ball.radius / 3, 0, Math.PI * 2); // Smaller ball
+        ctx.fillStyle = ball.color; // Same color as the main ball
+        ctx.fill();
+        ctx.closePath();
+
+        // Draw the trail
+        ctx.beginPath();
+        ctx.moveTo(ball.x, ball.y);
+        ctx.lineTo(indicatorX, indicatorY);
+        ctx.strokeStyle = ball.color; // Trail color same as the ball color
+        ctx.stroke();
+        ctx.closePath();
+    }
 }
 
 function drawBasket() {
@@ -142,18 +171,22 @@ function animate() {
         // Ball bounces off the walls
         if (ball.x + ball.radius > canvas.width) {
             ball.x = canvas.width - ball.radius;
-            ball.speedX = -ball.speedX;
+            ball.speedX = -ball.speedX + ball.spinX; // Add spin effect to speed
+            ball.spinX = -ball.spinX; // Reverse spin direction on collision
             ball.glowPulse = 10; // Trigger glow pulse on collision
         } else if (ball.x - ball.radius < 0) {
             ball.x = ball.radius;
-            ball.speedX = -ball.speedX;
+            ball.speedX = -ball.speedX + ball.spinX; // Add spin effect to speed
+            ball.spinX = -ball.spinX; // Reverse spin direction on collision
             ball.glowPulse = 10; // Trigger glow pulse on collision
         }
         if (ball.y - ball.radius < 0) {
             ball.y = ball.radius;
-            ball.speedY = -ball.speedY;
+            ball.speedY = -ball.speedY + ball.spinY; // Add spin effect to speed
+            ball.spinY = -ball.spinY; // Reverse spin direction on collision
             ball.glowPulse = 10; // Trigger glow pulse on collision
         }
+
 
         // Ball hits the bottom
         if (ball.y + ball.radius > canvas.height) {
@@ -173,6 +206,12 @@ function animate() {
             ball.speedY = -Math.abs(ball.speedY); // Ensure the ball goes upwards
 
             const impactPoint = ball.x - (basketX + paddle.width / 2);
+            const impactAngle = (impactPoint / (paddle.width / 2)) * (Math.PI / 4); // Max angle of 45 degrees
+
+            const speed = Math.sqrt(ball.speedX * ball.speedX + ball.speedY * ball.speedY);
+            ball.speedX = speed * Math.sin(impactAngle); // New speedX based on impact angle
+            ball.speedY = -speed * Math.cos(impactAngle); // New speedY based on impact angle
+
             ball.spinX = impactPoint * 0.2; // More pronounced spin effect
             ball.speedBoost = Math.abs(basketVelocity) * 0.1; // Speed boost based on paddle velocity
 
@@ -210,10 +249,16 @@ function animate() {
                     const vel1 = rotate(ball.speedX, ball.speedY, sin, cos, true);
                     const vel2 = rotate(otherBall.speedX, otherBall.speedY, sin, cos, true);
 
-                    // Collision reaction: swap the velocities
+                    // Collision reaction: swap the velocities and consider spin
                     const vxTotal = vel1.x - vel2.x;
                     vel1.x = ((ball.radius - otherBall.radius) * vel1.x + 2 * otherBall.radius * vel2.x) / (ball.radius + otherBall.radius);
                     vel2.x = vxTotal + vel1.x;
+
+                    // Add spin effect to velocities
+                    vel1.x += ball.spinX;
+                    vel1.y += ball.spinY;
+                    vel2.x += otherBall.spinX;
+                    vel2.y += otherBall.spinY;
 
                     // Update position to avoid sticking together
                     pos1.x += vel1.x;
@@ -239,12 +284,19 @@ function animate() {
                     otherBall.speedX = vel2F.x;
                     otherBall.speedY = vel2F.y;
 
+                    // Reverse spin direction on collision
+                    ball.spinX = -ball.spinX;
+                    ball.spinY = -ball.spinY;
+                    otherBall.spinX = -otherBall.spinX;
+                    otherBall.spinY = -otherBall.spinY;
+
                     // Trigger glow pulse on collision
                     ball.glowPulse = 20;
                     otherBall.glowPulse = 20;
                 }
             }
         }
+
     });
 
     // Add new balls at specific scores
